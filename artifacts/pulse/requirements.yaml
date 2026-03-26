@@ -1,0 +1,12 @@
+packages:
+  "framer-motion": "Smooth transitions for collapsible sections and chat messages"
+  "date-fns": "For formatting calendar dates in the daily feed"
+  "uuid": "For generating dummy data IDs"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to safely merge Tailwind CSS classes"
+
+images: []
+
+notes:
+  - App is 100% frontend with dummy data, using React Context for state management
+  - Sidebar layout follows Shadcn rules with full responsive behavior

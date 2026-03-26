@@ -1,0 +1,27 @@
+
+1. **AI Chat scope (v1)**: The spec says "no scope selector in v1 — searches all content by default." That's clear. But should the chat also be able to _answer questions about_ the content (like "summarize last week's podcasts") or is it purely search/retrieval? The spec implies both — just want to confirm.
+	1.  the chat also be able to _answer questions about_ the content
+    
+2. **Spotify transcription**: The spec says transcription is _mandatory_ for Spotify. This means if transcription fails for an episode, it won't get a summary. Should it still be stored (with a "transcription failed" status) or skipped entirely?
+	1. store as "transcription failed"
+    
+3. **Blog/Substack RSS vs. scraping**: For non-RSS blogs, who decides what counts as "boilerplate" to strip? This is tricky to get perfectly right. Should I flag when scraping confidence is low, or just do best-effort silently?
+	1. just do best effort silently - most of the sources will be RSS
+    
+4. **Read state granularity**: The spec shows "Mark as read" at the _date level_ (the whole day's content). There's no per-item read tracking. Is that correct — one toggle per day, not per article?
+	1. Just date level is fine / one toggle per day
+    
+5. **Manage Sources — editing**: The spec covers adding and pausing/resuming sources, but not _editing_ or _deleting_ them. Should sources be deletable in v1, or only pauseable?
+	1. in v1, only pauseable
+    
+
+**Suggestions / things I noticed:**
+
+- The `summary_tldr` field is in the data model, but the summarization prompt in Section 5 doesn't actually produce a TL;DR — it only produces Key Takeaways. Either the prompt should include a TL;DR section, or the data model field should be removed. Which would you prefer?
+	- Good catch, you can add back in to the default prompt, at the top: TL;DR: [2-3 sentence summary of what this is and why it matters] - and then keep the data model for that data
+    
+- The spec calls the source type `blog` in the enum but `Blog / Substack` in the UI. Just confirming: Substack (via RSS) falls under `blog` type, right?
+	- Yes, blog type
+    
+- The "Notable Quotes / Moments" section from Section 5 (format) isn't in the default prompt — it exists in the format description but the actual prompt template omits it. Intentional?
+	- You're right, remove it completely, i don't need it
