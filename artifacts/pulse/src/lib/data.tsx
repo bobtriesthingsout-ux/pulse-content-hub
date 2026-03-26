@@ -16,16 +16,11 @@ export interface ContentItem {
   sourceName: string;
   sourceType: SourceType;
   title: string;
-  publishedAt: string;
-  originalUrl: string;
+  publishedAt: Date;
+  url: string;
   tldr: string | null;
   takeaways: string[];
   type: string;
-}
-
-export interface DateGroup {
-  date: string;
-  items: ContentItem[];
 }
 
 export interface ChatMessage {
@@ -37,7 +32,7 @@ export interface ChatMessage {
 
 interface DataContextType {
   sources: Source[];
-  dateGroups: DateGroup[];
+  contentItems: ContentItem[];
   readStates: Record<string, boolean>;
   isLoading: boolean;
   toggleReadState: (date: string) => void;
@@ -53,9 +48,24 @@ const DataContext = createContext<DataContextType | null>(null);
 
 const API_BASE = "/api";
 
+function normalizeItem(raw: any): ContentItem {
+  return {
+    id: raw.id,
+    sourceId: raw.sourceId,
+    sourceName: raw.sourceName ?? "",
+    sourceType: raw.sourceType ?? "blog",
+    title: raw.title,
+    publishedAt: new Date(raw.publishedAt),
+    url: raw.originalUrl ?? raw.url ?? "#",
+    tldr: raw.summaryTldr ?? raw.tldr ?? null,
+    takeaways: Array.isArray(raw.takeaways) ? raw.takeaways : [],
+    type: raw.type,
+  };
+}
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [sources, setSources] = useState<Source[]>([]);
-  const [dateGroups, setDateGroups] = useState<DateGroup[]>([]);
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [readStates, setReadStates] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -68,9 +78,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const fetchContent = async () => {
-    const res = await fetch(`${API_BASE}/content/by-date`);
+    const res = await fetch(`${API_BASE}/content`);
     const data = await res.json();
-    setDateGroups(data);
+    setContentItems(data.map(normalizeItem));
   };
 
   const fetchReadStates = async () => {
@@ -134,33 +144,34 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
     setChatMessages(prev => [...prev, userMsg]);
     setIsAiTyping(true);
-    // AI chat implementation comes in Session 4
     setTimeout(() => {
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "ai",
-        content: "AI chat is coming soon — your content library is being built. Check back after more sources are ingested!",
+        content: "AI chat is coming soon — your content library is being built!",
       };
       setChatMessages(prev => [...prev, aiMsg]);
       setIsAiTyping(false);
     }, 800);
   };
 
-  const value = {
-    sources,
-    dateGroups,
-    readStates,
-    isLoading,
-    toggleReadState,
-    toggleSourceStatus,
-    addSource,
-    chatMessages,
-    sendChatMessage,
-    isAiTyping,
-    refetchSources: fetchSources,
-  };
-
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
+  return (
+    <DataContext.Provider value={{
+      sources,
+      contentItems,
+      readStates,
+      isLoading,
+      toggleReadState,
+      toggleSourceStatus,
+      addSource,
+      chatMessages,
+      sendChatMessage,
+      isAiTyping,
+      refetchSources: fetchSources,
+    }}>
+      {children}
+    </DataContext.Provider>
+  );
 }
 
 export function useData() {
