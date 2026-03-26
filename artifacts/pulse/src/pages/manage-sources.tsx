@@ -13,7 +13,7 @@ import { Plus, Link as LinkIcon, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ManageSources() {
-  const { sources, toggleSourceStatus, addSource } = useData();
+  const { sources = [], toggleSourceStatus, addSource } = useData();
   const { toast } = useToast();
   
   const [newType, setNewType] = useState<SourceType>("youtube");

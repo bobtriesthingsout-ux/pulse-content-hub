@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
 export default function DailyFeed() {
-  const { contentItems, sources, readStates, toggleReadState } = useData();
+  const { contentItems = [], sources = [], readStates, toggleReadState } = useData();
 
   // Group items by date string
   const groupedByDate = useMemo(() => {

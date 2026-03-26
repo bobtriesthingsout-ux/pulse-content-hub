@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function SourceView() {
   const { sourceId } = useParams();
-  const { sources, contentItems } = useData();
+  const { sources = [], contentItems = [] } = useData();
 
   const source = sources.find(s => s.id === sourceId);
   
