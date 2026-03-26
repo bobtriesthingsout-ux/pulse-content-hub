@@ -70,7 +70,7 @@ async function ingestRSS(source: typeof sources.$inferSelect) {
   }
 
   const feedText = await feedRes.text();
-  const parser = new XMLParser({ ignoreAttributes: false, cdataTagName: "__cdata" });
+  const parser = new XMLParser({ ignoreAttributes: false, cdataTagName: "__cdata", processEntities: false });
   const parsed = parser.parse(feedText);
   const rawItems = parsed?.rss?.channel?.item;
   if (!rawItems) {
