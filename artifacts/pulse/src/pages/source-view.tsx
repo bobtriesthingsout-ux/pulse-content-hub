@@ -51,7 +51,7 @@ export default function SourceView() {
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">{source.name}</h1>
             <a 
-              href={`https://${source.url}`} 
+               href={source.url.startsWith('http') ? source.url : `https://${source.url}`}
               target="_blank" 
               rel="noreferrer"
               className="text-primary hover:underline mt-2 inline-block font-medium text-sm"

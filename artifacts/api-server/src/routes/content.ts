@@ -6,16 +6,14 @@ import { z } from "zod";
 
 const router = Router();
 
-// GET /api/content — all content items, newest first
+// GET /api/content
 // Optional query params: ?sourceId=xxx&date=YYYY-MM-DD
 router.get("/", async (req, res) => {
   try {
     const { sourceId, date } = req.query;
+
     let query = db
-      .select({
-        item: contentItems,
-        source: sources,
-      })
+      .select({ item: contentItems, source: sources })
       .from(contentItems)
       .innerJoin(sources, eq(contentItems.sourceId, sources.id))
       .orderBy(desc(contentItems.publishedAt));
@@ -41,45 +39,12 @@ router.get("/", async (req, res) => {
     }));
     res.json(result);
   } catch (err) {
-    console.error(err);
+    console.error("GET /api/content error:", err);
     res.status(500).json({ error: "Failed to fetch content" });
   }
 });
 
-// GET /api/content/by-date — content grouped by date
-router.get("/by-date", async (req, res) => {
-  try {
-    const rows = await db
-      .select({ item: contentItems, source: sources })
-      .from(contentItems)
-      .innerJoin(sources, eq(contentItems.sourceId, sources.id))
-      .orderBy(desc(contentItems.publishedAt));
-
-    // Group by date
-    const grouped: Record<string, { date: string; items: object[] }> = {};
-    for (const r of rows) {
-      const date = r.item.publishedAt.toISOString().split("T")[0];
-      if (!grouped[date]) grouped[date] = { date, items: [] };
-      grouped[date].items.push({
-        ...r.item,
-        sourceName: r.source.name,
-        sourceType: r.source.type,
-        takeaways: r.item.summaryTakeaways ? JSON.parse(r.item.summaryTakeaways) : [],
-        quotes: r.item.summaryQuotes ? JSON.parse(r.item.summaryQuotes) : [],
-      });
-    }
-    // Sort dates newest first
-    const sorted = Object.values(grouped).sort((a, b) =>
-      b.date.localeCompare(a.date)
-    );
-    res.json(sorted);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch grouped content" });
-  }
-});
-
-// GET /api/content/read-status — all daily read states
+// GET /api/content/read-status
 router.get("/read-status", async (_req, res) => {
   try {
     const rows = await db.select().from(dailyReadStatus);
@@ -87,11 +52,12 @@ router.get("/read-status", async (_req, res) => {
     for (const r of rows) result[r.date] = r.isRead;
     res.json(result);
   } catch (err) {
+    console.error("GET /api/content/read-status error:", err);
     res.status(500).json({ error: "Failed to fetch read status" });
   }
 });
 
-// POST /api/content/read-status — upsert a date's read state
+// POST /api/content/read-status
 router.post("/read-status", async (req, res) => {
   try {
     const schema = z.object({ date: z.string(), isRead: z.boolean() });
@@ -105,15 +71,13 @@ router.post("/read-status", async (req, res) => {
       .where(eq(dailyReadStatus.date, date));
 
     if (existing.length > 0) {
-      await db
-        .update(dailyReadStatus)
-        .set({ isRead })
-        .where(eq(dailyReadStatus.date, date));
+      await db.update(dailyReadStatus).set({ isRead }).where(eq(dailyReadStatus.date, date));
     } else {
       await db.insert(dailyReadStatus).values({ date, isRead });
     }
     res.json({ date, isRead });
   } catch (err) {
+    console.error("POST /api/content/read-status error:", err);
     res.status(500).json({ error: "Failed to update read status" });
   }
 });
