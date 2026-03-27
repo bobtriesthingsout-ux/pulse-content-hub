@@ -4,6 +4,7 @@ import sourcesRouter from "./sources";
 import contentRouter from "./content";
 import ingestRouter from "./ingest";
 import summarizeRouter from "./summarize";
+import chatRouter from "./chat";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use("/sources", sourcesRouter);
 router.use("/content", contentRouter);
 router.use("/ingest", ingestRouter);
 router.use("/summarize", summarizeRouter);
+router.use("/chat", chatRouter);
 
 export default router;

@@ -144,15 +144,31 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
     setChatMessages(prev => [...prev, userMsg]);
     setIsAiTyping(true);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: content }),
+      });
+      const data = await res.json();
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "ai",
-        content: "AI chat is coming soon — your content library is being built!",
+        content: data.content ?? "Sorry, I couldn't generate a response.",
+        citations: data.citations ?? [],
       };
       setChatMessages(prev => [...prev, aiMsg]);
+    } catch (err) {
+      const aiMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "ai",
+        content: "Something went wrong — please try again.",
+      };
+      setChatMessages(prev => [...prev, aiMsg]);
+    } finally {
       setIsAiTyping(false);
-    }, 800);
+    }
   };
 
   return (
